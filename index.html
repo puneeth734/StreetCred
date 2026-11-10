@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreetCred AI — Smart Vendor Credit Scoring</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0f172a;
+  background-image:
+    radial-gradient(circle at 15% 50%, rgba(20, 184, 166, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+  min-height: 100vh;
+  color: #f8fafc;
+  padding: 40px 20px 80px;
+}
+
+h1, h2, h3, h4, .brand-font {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ─── LAYOUT ────────────────────────────────────────────────────────────────── */
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── GLASS CARD ────────────────────────────────────────────────────────────── */
+.card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 32px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3);
+}
+
+.card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-title i { font-size: 20px; color: #14b8a6; }
+
+/* ─── HEADER ────────────────────────────────────────────────────────────────── */
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(145deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 28px 36px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* Abstract design on the right */
+.header::after {
+  content: '';
+  position: absolute;
+  right: -50px;
+  top: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  right: 20px;
+  bottom: -40px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.logo {
+  position: relative;
+  z-index: 1;
+  width: 64px; height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #14b8a6 0%, #6366f1 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+  box-shadow: 0 10px 25px rgba(20, 184, 166, 0.4);
+  color: white;
+}
+
+.header-text {
+  position: relative;
+  z-index: 1;
+}
+
+.header-text h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.header-text p {
+  font-size: 15px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ─── TAB BUTTONS ───────────────────────────────────────────────────────────── */
+.tab-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 14px 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+.tab-btn:hover {
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(99,102,241,0.15));
+  border-color: rgba(99,102,241,0.4);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+}
+.tab-btn i { font-size: 18px; }
+
+/* ─── PANELS ────────────────────────────────────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeSlideUp 0.3s ease; }
+
+.step-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* ─── FORM GRID ─────────────────────────────────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.field { display: flex; flex-direction: column; gap: 8px; }
+
+.field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field input[type="number"],
+.field select {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 16px;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.field input::-webkit-inner-spin-button,
+.field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.field input:focus, .field select:focus {
+  border-color: #14b8a6;
+  background: rgba(20, 184, 166, 0.05);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);
+}
+.field .hint {
+  font-size: 11px;
+  color: #64748b;
+  padding-left: 2px;
+}
+.field select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* ─── UPLOAD ZONES ──────────────────────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed rgba(99, 102, 241, 0.4);
+  border-radius: 20px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(99, 102, 241, 0.03);
+}
+.upload-zone:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateY(-2px);
+}
+.upload-zone .uz-icon {
+  font-size: 48px;
+  color: #818cf8;
+  margin-bottom: 16px;
+  display: block;
+}
+.upload-zone .uz-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.upload-zone .uz-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+input[type="file"] { display: none; }
+
+.status-toast {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.status-toast.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+.status-toast.info {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+}
+.status-toast i { font-size: 20px; }
+
+.photo-img {
+  display: none;
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-top: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ─── MODEL GRID ────────────────────────────────────────────────────────────── */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.model-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+  text-align: center;
+}
+.model-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  transform: translateY(-2px);
+}
+.model-card.selected {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+}
+
+.check-ring {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: transparent;
+  transition: all 0.2s;
+}
+.model-card.selected .check-ring {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #fff;
+}
+
+.mc-emoji { font-size: 36px; margin-bottom: 12px; display: block; color: #14b8a6; }
+.mc-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* ─── PREDICT BUTTON ────────────────────────────────────────────────────────── */
+.predict-wrap { padding: 0; }
+
+.predict-btn {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #14b8a6 0%, #6366f1 100%);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+}
+.predict-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+}
+.predict-btn:active { transform: scale(0.98); }
+.predict-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.predict-btn i { font-size: 24px; }
+
+/* ─── RESULTS SECTION ───────────────────────────────────────────────────────── */
+#resultsSection { display: none; }
+
+.results-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: 'Outfit', sans-serif;
+  margin: 10px 0;
+}
+.results-divider::before,
+.results-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+}
+
+/* ─── SCORE HERO ────────────────────────────────────────────────────────────── */
+.score-hero {
+  background: linear-gradient(145deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.score-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.score-lhs .score-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+
+#scoreNumber {
+  font-family: 'Outfit', sans-serif;
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  background: linear-gradient(135deg, #2dd4bf, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.score-range-label {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.verdict-badge {
+  padding: 14px 28px;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.verdict-badge.approved {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+.verdict-badge.review {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+.verdict-badge.declined {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1.5px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+.verdict-badge i { font-size: 20px; }
+
+/* ─── SCORE BAR ─────────────────────────────────────────────────────────────── */
+.score-bar-section { position: relative; z-index: 1; margin-bottom: 10px; }
+
+.bar-zone-labels {
+  display: flex;
+  margin-bottom: 6px;
+}
+.bar-zone {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.score-bar-track {
+  height: 14px;
+  border-radius: 10px;
+  background: linear-gradient(90deg,
+    rgba(239, 68, 68, 0.3) 0%,
+    rgba(245, 158, 11, 0.3) 35%,
+    rgba(16, 185, 129, 0.3) 65%,
+    rgba(20, 184, 166, 0.3) 100%
+  );
+  position: relative;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  position: relative;
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: linear-gradient(90deg, #14b8a6 0%, #6366f1 100%);
+}
+.score-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: -3px; top: 50%;
+  transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4), 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.bar-number-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* ─── DETAIL BOXES ──────────────────────────────────────────────────────────── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.detail-box {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px;
+}
+.detail-box .db-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-box .db-label i { font-size: 16px; }
+.detail-box .db-val {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
+}
+.db-val.c-green { color: #34d399; }
+.db-val.c-amber { color: #fbbf24; }
+.db-val.c-red   { color: #f87171; }
+
+/* ─── LOAN SUMMARY BOX ──────────────────────────────────────────────────────── */
+.loan-summary {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  padding: 24px 30px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+.loan-summary.warn {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+.loan-summary.danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.loan-summary-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.loan-summary-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.loan-summary-text {
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+/* ─── FEATURE BARS ──────────────────────────────────────────────────────────── */
+.feature-list { display: flex; flex-direction: column; gap: 16px; }
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.fr-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.fr-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  width: 170px;
+  flex-shrink: 0;
+}
+.fr-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+.fr-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fr-pct {
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+  min-width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── MODEL SCORES ──────────────────────────────────────────────────────────── */
+.model-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+.msb {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px 20px;
+  transition: border-color 0.2s;
+}
+.msb:hover { border-color: rgba(99, 102, 241, 0.4); }
+.msb .msb-name {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.msb .msb-score {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #818cf8;
+  letter-spacing: -1px;
+}
+.msb .msb-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.05);
+  margin-top: 12px;
+  overflow: hidden;
+}
+.msb .msb-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #14b8a6, #6366f1);
+  transition: width 1.2s ease;
+}
+
+/* ─── ANIMATIONS ────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.75s linear infinite; display: inline-block; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.delay-1 { animation-delay: 0.1s; opacity: 0; }
+.delay-2 { animation-delay: 0.2s; opacity: 0; }
+.delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  body { padding: 20px 16px 40px; }
+  .header { flex-wrap: wrap; gap: 16px; padding: 24px; }
+  .detail-grid { grid-template-columns: 1fr; }
+  #scoreNumber { font-size: 64px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="logo">
+      <i class="ti ti-brand-shopee"></i>
+    </div>
+    <div class="header-text">
+      <h1>StreetCred</h1>
+      <p>Intelligent credit assessment for street vendors</p>
+    </div>
+  </div>
+
+  <!-- ── STEP 1 — INPUT ─────────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="step-label"><span class="step-num">1</span>Choose Input Method</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('manual')" id="tab-manual">
+        <i class="ti ti-keyboard"></i><span>Manual Entry</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('csv')" id="tab-csv">
+        <i class="ti ti-file-spreadsheet"></i><span>Upload CSV</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('photo')" id="tab-photo">
+        <i class="ti ti-camera"></i><span>Photo Scan</span>
+      </button>
+    </div>
+
+    <!-- PANEL: MANUAL -->
+    <div id="panel-manual" class="panel active">
+      <div class="form-grid">
+        <div class="field">
+          <label>Monthly Income (₹)</label>
+          <input type="number" id="Monthly_Income_Est_Rs" value="7000" min="0">
+          <span class="hint">Estimated monthly business income</span>
+        </div>
+        <div class="field">
+          <label>Monthly Savings (₹)</label>
+          <input type="number" id="Monthly_Savings_Rs" value="7000" min="0">
+          <span class="hint">Average savings per month</span>
+        </div>
+        <div class="field">
+          <label>Repayment On-Time (%)</label>
+          <input type="number" id="Repayment_OnTime_Pct" value="90" min="0" max="100">
+          <span class="hint">Past repayment punctuality (0-100)</span>
+        </div>
+        <div class="field">
+          <label>Consistency Score</label>
+          <input type="number" id="Consistency_Score" value="0.92" step="0.01" min="0" max="1">
+          <span class="hint">Income regularity index (0-1)</span>
+        </div>
+        <div class="field">
+          <label>Social Trust Score</label>
+          <input type="number" id="Social_Trust_Score" value="0.92" step="0.01" min="0" max="1">
+          <span class="hint">Community rating (0-1)</span>
+        </div>
+        <div class="field">
+          <label>UPI Txn Per Day</label>
+          <input type="number" id="UPI_Txn_Per_Day" value="100" min="0">
+          <span class="hint">Average daily digital transactions</span>
+        </div>
+        <div class="field">
+          <label>Days Active Per Week</label>
+          <input type="number" id="Days_Active_Per_Week" value="5" min="0" max="7">
+          <span class="hint">Active working days</span>
+        </div>
+        <div class="field">
+          <label>Years Vending</label>
+          <input type="number" id="Years_Vending" value="2" min="0">
+          <span class="hint">Experience in current business</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PANEL: CSV -->
+    <div id="panel-csv" class="panel">
+      <div class="upload-zone" onclick="document.getElementById('csvFile').click()">
+        <i class="ti ti-file-spreadsheet uz-icon"></i>
+        <div class="uz-title">Drop vendor CSV file here or click to browse</div>
+        <div class="uz-sub">Upload digital ledger exports. All columns will be auto-mapped to the ML inputs.</div>
+      </div>
+      <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(event)">
+      <div class="status-toast success" id="csvToast">
+        <i class="ti ti-circle-check"></i>
+        <span id="csvToastText">—</span>
+      </div>
+    </div>
+
+    <!-- PANEL: PHOTO -->
+    <div id="panel-photo" class="panel">
+      <div class="upload-zone" onclick="document.getElementById('photoFile').click()">
+        <i class="ti ti-camera uz-icon"></i>
+        <div class="uz-title">Photograph the vendor's ledger / bank statement</div>
+        <div class="uz-sub">Vision AI will automatically extract and parse financial kinematics into the required fields.</div>
+      </div>
+      <input type="file" id="photoFile" accept="image/*" onchange="handlePhoto(event)">
+      <img id="photoImg" class="photo-img" alt="Uploaded statement">
+      <div class="status-toast info" id="photoProcessing">
+        <i class="ti ti-loader spin"></i>
+        <span>Analyzing document and extracting features...</span>
+      </div>
+      <div class="status-toast success" id="photoDone">
+        <i class="ti ti-circle-check"></i>
+        <span>Fields extracted successfully! Switched to Manual Entry for your review.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── STEP 2 — MODEL SELECTION ──────────────────────────────────────────── -->
+  <div class="card">
+    <div class="step-label"><span class="step-num">2</span>Select Prediction Models</div>
+
+    <div class="model-grid">
+      <div class="model-card selected" data-model="rf" onclick="toggleModel(this)">
+        <div class="check-ring"><i class="ti ti-check"></i></div>
+        <i class="ti ti-brand-funimation mc-emoji"></i>
+        <div class="mc-name">Random Forest</div>
+      </div>
+
+      <div class="model-card selected" data-model="xgb" onclick="toggleModel(this)">
+        <div class="check-ring"><i class="ti ti-check"></i></div>
+        <i class="ti ti-bolt mc-emoji"></i>
+        <div class="mc-name">XGBoost</div>
+      </div>
+
+      <div class="model-card selected" data-model="lgbm" onclick="toggleModel(this)">
+        <div class="check-ring"><i class="ti ti-check"></i></div>
+        <i class="ti ti-bulb mc-emoji"></i>
+        <div class="mc-name">LightGBM</div>
+      </div>
+
+      <div class="model-card selected" data-model="gb" onclick="toggleModel(this)">
+        <div class="check-ring"><i class="ti ti-check"></i></div>
+        <i class="ti ti-chart-arrows-vertical mc-emoji"></i>
+        <div class="mc-name">Gradient Boost</div>
+      </div>
+
+      <div class="model-card selected" data-model="et" onclick="toggleModel(this)">
+        <div class="check-ring"><i class="ti ti-check"></i></div>
+        <i class="ti ti-dice-5 mc-emoji"></i>
+        <div class="mc-name">Extra Trees</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 — PREDICT ──────────────────────────────────────────────────── -->
+  <div class="predict-wrap">
+    <button class="predict-btn" id="predictBtn" onclick="runPrediction()">
+      <i class="ti ti-sparkles" id="predictIcon"></i>
+      <span id="predictText">Generate Credit Score</span>
+    </button>
+  </div>
+
+  <!-- ── RESULTS ───────────────────────────────────────────────────────────── -->
+  <div id="resultsSection">
+
+    <div class="results-divider">Assessment Result</div>
+
+    <!-- Score Hero -->
+    <div class="score-hero animate-in">
+      <div class="score-top">
+        <div class="score-lhs">
+          <div class="score-eyebrow">Credit Score</div>
+          <div id="scoreNumber">—</div>
+          <div class="score-range-label">CIBIL / FICO scale &nbsp;·&nbsp; 300 – 850</div>
+        </div>
+        <div class="verdict-badge approved" id="verdictBadge">
+          <i class="ti ti-circle-check"></i>
+          <span id="verdictText">—</span>
+        </div>
+      </div>
+
+      <!-- Bar -->
+      <div class="score-bar-section">
+        <div class="bar-zone-labels">
+          <div class="bar-zone">Poor</div>
+          <div class="bar-zone">Fair</div>
+          <div class="bar-zone">Good</div>
+          <div class="bar-zone">Very Good</div>
+          <div class="bar-zone">Excellent</div>
+        </div>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" id="scoreBarFill" style="width: 0%;"></div>
+        </div>
+        <div class="bar-number-labels">
+          <span>300</span><span>430</span><span>560</span><span>690</span><span>820</span><span>850</span>
+        </div>
+      </div>
+
+      <!-- Detail boxes -->
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="db-label"><i class="ti ti-gavel"></i>Loan Decision</div>
+          <div class="db-val" id="loanDecision">—</div>
+        </div>
+        <div class="detail-box">
+          <div class="db-label"><i class="ti ti-currency-rupee"></i>Suggested Limit</div>
+          <div class="db-val c-green" id="loanLimit">—</div>
+        </div>
+        <div class="detail-box">
+          <div class="db-label"><i class="ti ti-shield-half"></i>Risk Factor</div>
+          <div class="db-val c-amber" id="riskFactor">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loan Summary Natural Language -->
+    <div class="loan-summary animate-in delay-1" id="loanSummaryBox">
+      <div class="loan-summary-icon" id="loanSummaryIcon">✅</div>
+      <div>
+        <div class="loan-summary-title" id="loanSummaryTitle">—</div>
+        <div class="loan-summary-text" id="loanSummaryText">—</div>
+      </div>
+    </div>
+
+    <!-- Feature Influence -->
+    <div class="card animate-in delay-2">
+      <div class="card-title"><i class="ti ti-chart-bar"></i>Classifier Feature Importance</div>
+      <div class="feature-list" id="featureList"></div>
+    </div>
+
+    <!-- Model Ensemble -->
+    <div class="card animate-in delay-3">
+      <div class="card-title"><i class="ti ti-cpu"></i>Individual Model Scores (Regression)</div>
+      <div class="model-scores-grid" id="modelScoresGrid"></div>
+    </div>
+
+  </div><!-- /resultsSection -->
+
+</div><!-- /app -->
+
+<script>
+// ── TAB SWITCH ─────────────────────────────────────────────────────────────────
+function switchTab(t) {
+  ['manual','csv','photo'].forEach(name => {
+    document.getElementById('tab-'+name).classList.toggle('active', name===t);
+    document.getElementById('panel-'+name).classList.toggle('active', name===t);
+  });
+}
+
+// ── CSV UPLOAD (Mock extraction) ───────────────────────────────────────────────
+function handleCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  // Mocking parsing delay
+  setTimeout(() => {
+    document.getElementById('csvToast').style.display = 'flex';
+    document.getElementById('csvToastText').textContent =
+      `Successfully loaded dataset from "${file.name}". Switched to Manual Entry for review.`;
+    // We populate with some dummy data to simulate CSV load
+    document.getElementById('Monthly_Income_Est_Rs').value = '18000';
+    document.getElementById('Monthly_Savings_Rs').value = '4000';
+    document.getElementById('Consistency_Score').value = '0.65';
+    document.getElementById('Social_Trust_Score').value = '0.70';
+    document.getElementById('UPI_Txn_Per_Day').value = '30';
+    document.getElementById('Days_Active_Per_Week').value = '5';
+    document.getElementById('Years_Vending').value = '2';
+    setTimeout(() => switchTab('manual'), 1000);
+  }, 800);
+}
+
+// ── PHOTO UPLOAD (Mock extraction) ───────────────────────────────────────────────
+function handlePhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const img = document.getElementById('photoImg');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+
+  document.getElementById('photoProcessing').style.display = 'flex';
+  document.getElementById('photoDone').style.display = 'none';
+
+  setTimeout(() => {
+    document.getElementById('photoProcessing').style.display = 'none';
+    document.getElementById('photoDone').style.display = 'flex';
+    // Fill mock data
+    document.getElementById('Monthly_Income_Est_Rs').value = '35000';
+    document.getElementById('Monthly_Savings_Rs').value = '12000';
+    document.getElementById('Consistency_Score').value = '0.90';
+    document.getElementById('Social_Trust_Score').value = '0.95';
+    document.getElementById('UPI_Txn_Per_Day').value = '80';
+    document.getElementById('Days_Active_Per_Week').value = '7';
+    document.getElementById('Years_Vending').value = '6';
+    setTimeout(() => switchTab('manual'), 1500);
+  }, 2500);
+}
+
+// ── MODEL TOGGLE ───────────────────────────────────────────────────────────────
+function toggleModel(card) {
+  const selected = document.querySelectorAll('.model-card.selected');
+  if (card.classList.contains('selected') && selected.length <= 1) {
+    return;
+  }
+  card.classList.toggle('selected');
+}
+
+const FEATURE_ICONS = {
+    'Monthly_Income_Est_Rs': { icon: 'ti-wallet', color: '#34d399', label: 'Income' },
+    'Monthly_Savings_Rs': { icon: 'ti-piggy-bank', color: '#60a5fa', label: 'Savings' },
+    'Repayment_OnTime_Pct': { icon: 'ti-clock', color: '#f472b6', label: 'On-time Repayment' },
+    'Consistency_Score': { icon: 'ti-chart-bar', color: '#fbbf24', label: 'Consistency' },
+    'Social_Trust_Score': { icon: 'ti-users', color: '#c084fc', label: 'Social Trust' },
+    'UPI_Txn_Per_Day': { icon: 'ti-qrcode', color: '#38bdf8', label: 'Daily UPI Txns' },
+    'Days_Active_Per_Week': { icon: 'ti-calendar', color: '#f87171', label: 'Active Days/Wk' },
+    'Years_Vending': { icon: 'ti-award', color: '#fb923c', label: 'Vending Exp.' },
+    'Monthly_UPI_Credit_Rs': { icon: 'ti-currency-rupee', color: '#14b8a6', label: 'UPI Credit Vol.' },
+    'UPI_Active_Days_Per_Month': { icon: 'ti-calendar-event', color: '#0ea5e9', label: 'Active Days/Mo' },
+    'UPI_Avg_Credit_Rs': { icon: 'ti-chart-line', color: '#84cc16', label: 'Avg Txn Size' },
+    'Total_Daily_Sales_Rs': { icon: 'ti-shopping-cart', color: '#d946ef', label: 'Daily Sales' },
+    'UPI_Txn_StdDev': { icon: 'ti-chart-arrows', color: '#f43f5e', label: 'Txn Volatility' },
+    'Morning_Txn_Ratio': { icon: 'ti-sun', color: '#fbbf24', label: 'Morning Txns' },
+    'Evening_Txn_Ratio': { icon: 'ti-moon', color: '#818cf8', label: 'Evening Txns' },
+    'Monthly_Expense_Rs': { icon: 'ti-receipt-2', color: '#ef4444', label: 'Expenses' },
+    'CoV_Income': { icon: 'ti-calculator', color: '#a855f7', label: 'Income CoV' }
+  };
+
+const MODEL_NAMES = {
+  'rf': 'Random Forest',
+  'xgb': 'XGBoost',
+  'lgbm': 'LightGBM',
+  'gb': 'Gradient Boost',
+  'et': 'Extra Trees'
+};
+
+// ── MAIN PREDICTION ────────────────────────────────────────────────────────────
+async function runPrediction() {
+  const selectedModels = [...document.querySelectorAll('.model-card.selected')].map(c => c.dataset.model);
+  if (selectedModels.length === 0) return;
+
+  const btn = document.getElementById('predictBtn');
+  const icon = document.getElementById('predictIcon');
+  const text = document.getElementById('predictText');
+
+  btn.classList.add('loading');
+  icon.className = 'ti ti-loader spin';
+  text.textContent = 'Running ML Pipeline...';
+
+  // Gather inputs
+  const payload = {
+    models: selectedModels,
+    inputs: {
+      Monthly_Income_Est_Rs: parseFloat(document.getElementById('Monthly_Income_Est_Rs').value),
+      Monthly_Savings_Rs: parseFloat(document.getElementById('Monthly_Savings_Rs').value),
+      Consistency_Score: parseFloat(document.getElementById('Consistency_Score').value),
+      Social_Trust_Score: parseFloat(document.getElementById('Social_Trust_Score').value),
+      UPI_Txn_Per_Day: parseFloat(document.getElementById('UPI_Txn_Per_Day').value),
+      Days_Active_Per_Week: parseFloat(document.getElementById('Days_Active_Per_Week').value),
+      Years_Vending: parseFloat(document.getElementById('Years_Vending').value)
+    }
+  };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    // IMPORTANT: Replace the URL below with your live Render backend URL after deploying!
+    const res = await fetch('http://127.0.0.1:8000/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) throw new Error('API Error');
+    const data = await res.json();
+
+    // Update UI
+    document.getElementById('scoreNumber').textContent = data.ensemble_score;
+    const pct = Math.max(0, Math.min(100, ((data.ensemble_score - 300) / 550 * 100))).toFixed(2);
+    document.getElementById('scoreBarFill').style.width = pct + '%';
+
+    const v = data.verdict;
+    const vb = document.getElementById('verdictBadge');
+    vb.className = 'verdict-badge ' + v.cls;
+    vb.querySelector('i').className = 'ti ' + v.icon;
+    document.getElementById('verdictText').textContent = v.decision;
+
+    const ld = document.getElementById('loanDecision');
+    ld.textContent = v.decision;
+    ld.className = 'db-val ' + (v.cls === 'approved' ? 'c-green' : v.cls === 'review' ? 'c-amber' : 'c-red');
+
+    document.getElementById('loanLimit').textContent = v.limitStr;
+    document.getElementById('riskFactor').textContent = v.risk;
+
+    const sb = document.getElementById('loanSummaryBox');
+    sb.className = 'loan-summary animate-in delay-1 ' + v.summaryClass;
+    document.getElementById('loanSummaryIcon').textContent = v.summaryIcon;
+    document.getElementById('loanSummaryTitle').textContent = v.summaryTitle;
+    document.getElementById('loanSummaryText').textContent = v.summaryText;
+
+    // Feature Importances
+    const fl = document.getElementById('featureList');
+    fl.innerHTML = '';
+    
+    const imps = data.feature_importances;
+    const maxImp = Math.max(...Object.values(imps), 0.01);
+    
+    // Sort features by importance descending, take top 6 for clean UI
+    const sortedFeatures = Object.keys(imps)
+      .sort((a,b) => imps[b] - imps[a])
+      .slice(0, 10);
+    
+    sortedFeatures.forEach(f => {
+      if (!FEATURE_ICONS[f]) return;
+      const ft = FEATURE_ICONS[f];
+      const rawVal = imps[f];
+      // Scale visual bar relative to the max so it looks fuller, but keep text absolute
+      const relativePct = (rawVal / maxImp * 100).toFixed(0);
+      const displayPct = rawVal.toFixed(1);
+      
+      fl.innerHTML += `
+        <div class="feature-row">
+          <i class="ti ${ft.icon} fr-icon" style="color:${ft.color}"></i>
+          <span class="fr-name">${ft.label}</span>
+          <div class="fr-track">
+            <div class="fr-fill" style="width:${relativePct}%; background:${ft.color};"></div>
+          </div>
+          <span class="fr-pct">${displayPct}%</span>
+        </div>`;
+    });
+
+    // Model scores
+    const mg = document.getElementById('modelScoresGrid');
+    mg.innerHTML = Object.entries(data.model_scores).map(([m, info]) => {
+      const score = typeof info === 'object' ? info.score : info;
+      const p = Math.max(0, Math.min(100, ((score - 300) / 550 * 100))).toFixed(1);
+      
+      return `
+        <div class="msb">
+          <div class="msb-name" style="text-transform: none;">${m}</div>
+          <div class="msb-score">${score}</div>
+          <div class="msb-bar"><div class="msb-bar-fill" style="width:${p}%;"></div></div>
+        </div>`;
+    }).join('');
+
+    // Show results
+    const rs = document.getElementById('resultsSection');
+    rs.style.display = 'flex';
+    rs.style.flexDirection = 'column';
+    rs.style.gap = '24px';
+    setTimeout(() => rs.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+
+  } catch (err) {
+    alert('Failed to connect to ML Backend. Please ensure python app.py is running.');
+    console.error(err);
+  } finally {
+    // Reset button
+    btn.classList.remove('loading');
+    icon.className = 'ti ti-sparkles';
+    text.textContent = 'Generate Credit Score';
+  }
+}
+</script>
+</body>
+</html>
+
+
